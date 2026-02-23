@@ -1,0 +1,63 @@
+The Nautilus DevOps team is testing various Ansible modules on servers in Stratos DC. They're currently focusing on file creation on remote hosts using Ansible. Here are the details:
+
+
+a. Create an inventory file ~/playbook/inventory on jump host and include all app servers.
+
+
+b. Create a playbook ~/playbook/playbook.yml to create a blank file /opt/nfsshare.txt on all app servers.
+
+
+c. Set the permissions of the /opt/nfsshare.txt file to 0755.
+
+
+d. Ensure the user/group owner of the /opt/nfsshare.txt file is tony on app server 1, steve on app server 2 and banner on app server 3.
+
+
+Note: Validation will execute the playbook using the command ansible-playbook -i inventory playbook.yml, so ensure the playbook functions correctly without any additional arguments.
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+thor@jumphost ~/playbook$ ansible-playbook -i inventory playbook.yml
+
+PLAY [Create /home/opt.txt on all app servers] ******************************************************
+
+TASK [Gathering Facts] ******************************************************************************
+ok: [stapp01]
+ok: [stapp03]
+ok: [stapp02]
+
+TASK [Ensure /home/opt.txt exists with correct permissions and ownership] ***************************
+changed: [stapp03]
+changed: [stapp01]
+changed: [stapp02]
+
+PLAY RECAP ******************************************************************************************
+stapp01                    : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+stapp02                    : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+stapp03                    : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+thor@jumphost ~/playbook$ vi playbook1.yml
+thor@jumphost ~/playbook$ ansible-playbook -i inventory playbook1.yml
+
+PLAY [all] ******************************************************************************************
+
+TASK [Gathering Facts] ******************************************************************************
+ok: [stapp01]
+ok: [stapp03]
+ok: [stapp02]
+
+TASK [Install httpd package] ************************************************************************
+fatal: [stapp02]: FAILED! => {"changed": false, "module_stderr": "Shared connection to stapp02 closed.\r\n", "module_stdout": "", "msg": "MODULE FAILURE\nSee stdout/stderr for the exact error", "rc": 137}
+fatal: [stapp01]: FAILED! => {"changed": false, "module_stderr": "Shared connection to stapp01 closed.\r\n", "module_stdout": "", "msg": "MODULE FAILURE\nSee stdout/stderr for the exact error", "rc": 137}
+changed: [stapp03]
+
+TASK [Start service httpd] **************************************************************************
+changed: [stapp03]
+
+PLAY RECAP ******************************************************************************************
+stapp01                    : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+stapp02                    : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+stapp03                    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+thor@jumphost ~/playbook$ 
