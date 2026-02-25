@@ -18,46 +18,29 @@ Note: Validation will execute the playbook using the command ansible-playbook -i
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-thor@jumphost ~/playbook$ ansible-playbook -i inventory playbook.yml
+Solution to create in entory file:
+vi inventory
 
-PLAY [Create /home/opt.txt on all app servers] ******************************************************
+[app_servers]
+stapp01 ansible_user=tony ansible_password=Ir0nM@n ansible_connection=ssh
+stapp02 ansible_user=steve ansible_password=Am3ric@ ansible_connection=ssh
+stapp03 ansible_user=banner ansible_password=BigGr33n ansible_connection=ssh
 
-TASK [Gathering Facts] ******************************************************************************
-ok: [stapp01]
-ok: [stapp03]
-ok: [stapp02]
+To create playbook.yml file
 
-TASK [Ensure /home/opt.txt exists with correct permissions and ownership] ***************************
-changed: [stapp03]
-changed: [stapp01]
-changed: [stapp02]
+playbook.yml:
 
-PLAY RECAP ******************************************************************************************
-stapp01                    : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-stapp02                    : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-stapp03                    : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+- hosts: all
+  become: yes
+  tasks:
+  - name: Create empty file
+    file:
+      path: /tmp/app.txt
+      state: touch
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+      mode: "0755"
 
-thor@jumphost ~/playbook$ vi playbook1.yml
-thor@jumphost ~/playbook$ ansible-playbook -i inventory playbook1.yml
+After creating the inventory & app file. run below command for validation of playbook is functioning correctly.
 
-PLAY [all] ******************************************************************************************
-
-TASK [Gathering Facts] ******************************************************************************
-ok: [stapp01]
-ok: [stapp03]
-ok: [stapp02]
-
-TASK [Install httpd package] ************************************************************************
-fatal: [stapp02]: FAILED! => {"changed": false, "module_stderr": "Shared connection to stapp02 closed.\r\n", "module_stdout": "", "msg": "MODULE FAILURE\nSee stdout/stderr for the exact error", "rc": 137}
-fatal: [stapp01]: FAILED! => {"changed": false, "module_stderr": "Shared connection to stapp01 closed.\r\n", "module_stdout": "", "msg": "MODULE FAILURE\nSee stdout/stderr for the exact error", "rc": 137}
-changed: [stapp03]
-
-TASK [Start service httpd] **************************************************************************
-changed: [stapp03]
-
-PLAY RECAP ******************************************************************************************
-stapp01                    : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
-stapp02                    : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
-stapp03                    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-
-thor@jumphost ~/playbook$ 
+ansible-playbook -i inventory playbook.yml
